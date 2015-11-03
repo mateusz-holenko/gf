@@ -16,8 +16,9 @@ def scan(directory):
     for entry in os.listdir(directory):
         to_scan = []
         path = os.path.join(directory, entry)
-        if os.path.isdir(path) and entry not in ignored_directories:
-            to_scan.extend(scan(path))
+        if os.path.isdir(path):
+            if entry not in ignored_directories:
+                to_scan.extend(scan(path))
         else:
             to_scan.append(path)
 
@@ -28,8 +29,10 @@ def scan(directory):
     return interesting_files
 
 def check(path):
+    global interesting_extensions
     global ignored_extensions
     global maximum_file_size
+
     if os.stat(path).st_size > maximum_file_size:
         return False
     for ignored_extension in ignored_extensions:
