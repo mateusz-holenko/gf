@@ -1,10 +1,9 @@
 #!/usr/bin/python3
 import os
 
-interesting_extensions = [ '', 'py', 'cs', 'txt', 'c', 'h', 'cpp', 'hpp', 'json', 'csproj' ]
-
-ignored_directories = [ '.git' ]
-ignored_extensions = [  ]
+interesting_extensions = []
+ignored_extensions = ['exe', 'dll', 'mdb', 'png', 'so', 'zip', 'gz', 'ttf', 'jpeg', 'jpg', 'pcap', 'o', 'a', 'nupkg', 'pdf' ]
+ignored_directories = ['.git', 'Binaries', 'bin', 'fonts']
 
 # 200 kB
 maximum_file_size = 200 * 1024 * 1024
