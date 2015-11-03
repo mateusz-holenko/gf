@@ -19,7 +19,10 @@ class SearchResult:
 def _parse_file(file, pattern):
     results = []
     line_number = 1
-    for line in utils.read_file(file):
+    lines = utils.read_file(file)
+    if lines is None:
+        return None
+    for line in lines:
         line = line[:-1]
         m = list(pattern.finditer(line))
         if any(m):
@@ -37,7 +40,11 @@ def grep(expr):
     results = []
     pattern = re.compile(expr)
     for file in interesting_files:
-        results.extend(_parse_file(file, pattern))
+        parsed = _parse_file(file, pattern)
+        if parsed is not None:
+            results.extend(parsed)
+        else:
+            print("Skipping file: " + file)
 
     items = []
     counter = 1
