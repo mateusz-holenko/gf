@@ -13,8 +13,10 @@ class MainView(urwid.Frame):
         urwid.connect_signal(self.results_list, 'edit', self.open_editor)
         super(MainView, self).__init__(self.results_list, header=urwid.Text('GF improved 0.1'))
 
-    def open_editor(self, path, line):
-        subprocess.call(["vim", "+" + str(line), path])
+    def open_editor(self):
+        for (path, line) in controller.selected_files:
+            subprocess.call(["vim", "+" + str(line), path])
+        self.results_list.deselect_all()
         self._invalidate()
 
     def show_file_view(self, path, line):

@@ -7,6 +7,7 @@ from widgets.ListBoxItem import ListBoxItem
 
 interesting_files = []
 result_walker = None
+selected_files = []
 
 class SearchResult:
     def __init__(self, path, line_content, line_number, match_location):

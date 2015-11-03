@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 import urwid
 import logging
+import controller
 from widgets.FileViewer import FileViewer
 
 logger = logging.getLogger(__name__)
@@ -22,7 +23,12 @@ class CustomListBox(urwid.ListBox):
             urwid.emit_signal(self, 'show', self.focus.original_widget.path, self.focus.original_widget.line_number)
             return None
         elif key == 'e':
-            urwid.emit_signal(self, 'edit', self.focus.original_widget.path, self.focus.original_widget.line_number) 
+            if len(controller.selected_files) == 0:
+                self.focus.original_widget.set_selected(True)
+            urwid.emit_signal(self, 'edit')
+            return None
+        elif key == 't':
+            self.focus.original_widget.toggle_selected()
             return None
 
         if key == 'down' and self.focus_position == len(self.body) - 1:
@@ -30,3 +36,6 @@ class CustomListBox(urwid.ListBox):
 
         return super(CustomListBox, self).keypress(size, key)
 
+    def deselect_all(self):
+        for element in self.body:
+            element.original_widget.set_selected(False)
