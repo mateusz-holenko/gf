@@ -6,8 +6,10 @@ import filemanager
 from widgets.ListBoxItem import ListBoxItem
 
 interesting_files = []
-result_walker = None
-selected_files = []
+result_walker = urwid.SimpleFocusListWalker([])
+selected_results = []
+grep_result = []
+dic = {}
 
 class SearchResult:
     def __init__(self, path, line_content, line_number, match_location):
@@ -35,24 +37,51 @@ def scan(directory):
     interesting_files = filemanager.scan(directory)
 
 def grep(expr):
-    global result_walker
+    global grep_result
 
-    results = []
+    grep_result = []
     pattern = re.compile(expr)
     for file in interesting_files:
         parsed = _parse_file(file, pattern)
         if parsed is not None:
-            results.extend(parsed)
+            grep_result.extend(parsed)
         else:
             print("Skipping file: " + file)
 
-    items = []
-    counter = 1
-    for result in results:
-        item = ListBoxItem(counter, result.path, result.line_number, result.line_content, result.match_location)
-        items.append(urwid.AttrMap(item, None, focus_map='reversed'))
-        counter += 1
-    result_walker = urwid.SimpleFocusListWalker(items)
+    reset_filter()
 
-    return results
+def reset_filter():
+    result_walker.clear()
+    dic.clear()
+
+    counter = 1
+    for result in grep_result:
+        item = ListBoxItem(counter, result)
+        dic[result] = item
+        result_walker.append(urwid.AttrMap(item, None, focus_map='reversed'))
+        counter += 1
+
+def toggle_result(result):
+    global selected_results
+
+    is_selected = result in selected_results
+    select_result(result, not is_selected)
+
+def select_result(result, is_selected):
+    global selected_results
+
+    #todo: optimize
+    if is_selected:
+        if result not in selected_results: 
+            selected_results.append(result)
+            dic[result].set_selected(True)
+    else:
+        if result in selected_results: 
+            selected_results.remove(result)
+            dic[result].set_selected(False)
+
+def deselect_all_results():
+    for result in selected_results:
+        dic[result].set_selected(False)
+    selected_results.clear()
 
