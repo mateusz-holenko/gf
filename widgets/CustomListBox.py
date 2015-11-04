@@ -1,15 +1,9 @@
 #!/usr/bin/python3
 import urwid
-import logging
 import controller
-from widgets.FileViewer import FileViewer
-
-logger = logging.getLogger(__name__)
-file_viewer = FileViewer()
 
 class CustomListBox(urwid.ListBox):
-    # _metaclass_ = urwid.signals.MetaSignals
-    signals = ['show', 'edit']
+    signals = ['show', 'edit', 'moved']
 
     def __init__(self, body):
         super(CustomListBox, self).__init__(body)
@@ -30,9 +24,22 @@ class CustomListBox(urwid.ListBox):
         elif key == 't':
             controller.toggle_result(self.focus.original_widget.result)
             return None
+        elif key == 'T':
+            for element in self.body:
+                controller.toggle_result(element.original_widget.result)
+            return None
+        elif key == 'd':
+            controller.filter_distinct_files()
+            return None
+        elif key == 'x':
+            controller.reset_filter()
+            return None
 
         if key == 'down' and self.focus_position == len(self.body) - 1:
             return None
+
+        if key == 'up' or key == 'down':
+            urwid.emit_signal(self, 'moved', self.focus_position)
 
         return super(CustomListBox, self).keypress(size, key)
 
