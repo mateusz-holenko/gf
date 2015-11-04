@@ -14,15 +14,15 @@ class MainView(urwid.Frame):
         super(MainView, self).__init__(self.results_list, header=urwid.Text('GF improved 0.1'))
 
     def open_editor(self):
-        for (path, line) in controller.selected_files:
-            subprocess.call(["vim", "+" + str(line), path])
-        self.results_list.deselect_all()
+        for result in controller.selected_results:
+            subprocess.call(["vim", "+" + str(result.line_number), result.path])
+        controller.deselect_all_results()
         self._invalidate()
 
-    def show_file_view(self, path, line):
+    def show_file_view(self, result):
         self.file_viewer = FileViewer()
         urwid.connect_signal(self.file_viewer, 'quit', self.hide_file_view)
-        self.file_viewer.show_file(path, line)
+        self.file_viewer.show_file(result.path, result.line_number)
 
         self.body = urwid.Pile([self.results_list, self.file_viewer])
         self.body.focus_position = 1

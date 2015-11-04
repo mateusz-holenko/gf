@@ -20,15 +20,15 @@ class CustomListBox(urwid.ListBox):
         elif key == 'k':
             key = 'up'
         elif key == 'enter':
-            urwid.emit_signal(self, 'show', self.focus.original_widget.path, self.focus.original_widget.line_number)
+            urwid.emit_signal(self, 'show', self.focus.original_widget.result)
             return None
         elif key == 'e':
-            if len(controller.selected_files) == 0:
-                self.focus.original_widget.set_selected(True)
+            if len(controller.selected_results) == 0:
+                controller.select_result(self.focus.original_widget.result, True)
             urwid.emit_signal(self, 'edit')
             return None
         elif key == 't':
-            self.focus.original_widget.toggle_selected()
+            controller.toggle_result(self.focus.original_widget.result)
             return None
 
         if key == 'down' and self.focus_position == len(self.body) - 1:
@@ -36,6 +36,3 @@ class CustomListBox(urwid.ListBox):
 
         return super(CustomListBox, self).keypress(size, key)
 
-    def deselect_all(self):
-        for element in self.body:
-            element.original_widget.set_selected(False)
