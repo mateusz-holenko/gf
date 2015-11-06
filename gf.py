@@ -15,11 +15,9 @@ expr = sys.argv[1]
 
 #processing_pool = concurrent.futures.ThreadPoolExecutor(max_workers=10)
 
+controller.main_view = MainView()
 controller.scan(directory)
 controller.grep(expr)
+controller.main_loop = urwid.MainLoop(controller.main_view, palette=[('reversed', 'standout', ''), ('matched', 'dark red', '')])
 
-def exit_on_q(key):
-    if key in ('q', 'Q'):
-        raise urwid.ExitMainLoop()
-
-urwid.MainLoop(MainView(), palette=[('reversed', 'standout', ''), ('matched', 'dark red', '')], unhandled_input=exit_on_q).run()
+controller.main_loop.run()
