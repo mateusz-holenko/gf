@@ -72,11 +72,11 @@ def select_result(result, is_selected):
 
     #todo: optimize
     if is_selected:
-        if result not in selected_results: 
+        if result not in selected_results:
             selected_results.append(result)
             dic[result].set_selected(True)
     else:
-        if result in selected_results: 
+        if result in selected_results:
             selected_results.remove(result)
             dic[result].set_selected(False)
 
