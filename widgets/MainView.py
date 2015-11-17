@@ -30,8 +30,11 @@ class StatusCommandWidget(urwid.Pile):
         self.edit_box = EditBox(urwid.Edit())
         urwid.connect_signal(self.edit_box, 'entered', self._hide_command)
         urwid.connect_signal(self.edit_box, 'canceled', self._hide_command)
-        super(StatusCommandWidget, self).__init__([self.status, urwid.Text('')])
+        super(StatusCommandWidget, self).__init__([self.status, urwid.Text('', align='right')])
         self.focus_position = 1
+
+    def set_right_status(self, text):
+        self.contents[1][0].set_text(text)
 
     def ask_and_run(self, text, action):
         self.edit_box.set_text(text)
@@ -43,7 +46,7 @@ class StatusCommandWidget(urwid.Pile):
         action(text)
 
     def _hide_command(self, arg):
-        self.contents[1] = (urwid.Filler(urwid.Text('')), ('given', 1))
+        self.contents[1] = (urwid.Filler(urwid.Text('', align='right')), ('given', 1))
 
 class MainView(urwid.Frame):
     def __init__(self):
@@ -73,6 +76,11 @@ class MainView(urwid.Frame):
         shortcut_manager.register('x', controller.reset_filter)
         shortcut_manager.register('enter', self.results_list.show_focused_content)
         shortcut_manager.register('q', controller.exit)
+
+        shortcut_manager.status_changed_callback = self._shortcut_manager_status_changed
+
+    def _shortcut_manager_status_changed(self):
+        self.status_line.set_right_status(''.join(shortcut_manager.keys))
 
     def open_editor(self):
         for result in controller.selected_results:

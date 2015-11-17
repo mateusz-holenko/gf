@@ -4,6 +4,7 @@ import controller
 buffer = []
 actions = {}
 repeat = 0
+keys = []
 
 def register(shortcut, action):
     if type(shortcut) is not list:
@@ -17,6 +18,7 @@ def unregister(shortcut):
 
 def handle_key(key):
     global repeat
+    keys.append(key)
 
     if key == 'esc':
         reset()
@@ -34,8 +36,14 @@ def handle_key(key):
                 controller.main_loop.draw_screen()
             reset()
 
+    status_changed_callback()
+
 def reset():
     global repeat
-
+    keys.clear()
     buffer.clear()
     repeat = 0
+
+def status_changed_callback():
+    pass
+
