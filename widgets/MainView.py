@@ -28,13 +28,14 @@ class StatusCommandWidget(urwid.Pile):
     def __init__(self, markup):
         self.status = urwid.Text(markup)
         self.edit_box = EditBox(urwid.Edit())
+        self.right_status = urwid.Text('', align='right')
         urwid.connect_signal(self.edit_box, 'entered', self._hide_command)
         urwid.connect_signal(self.edit_box, 'canceled', self._hide_command)
-        super(StatusCommandWidget, self).__init__([self.status, urwid.Text('', align='right')])
+        super(StatusCommandWidget, self).__init__([self.status, self.right_status])
         self.focus_position = 1
 
     def set_right_status(self, text):
-        self.contents[1][0].set_text(text)
+        self.right_status.set_text(text)
 
     def ask_and_run(self, text, action):
         self.edit_box.set_text(text)
@@ -46,7 +47,7 @@ class StatusCommandWidget(urwid.Pile):
         action(text)
 
     def _hide_command(self, arg):
-        self.contents[1] = (urwid.Filler(urwid.Text('', align='right')), ('given', 1))
+        self.contents[1] = (urwid.Filler(self.right_status), ('given', 1))
 
 class MainView(urwid.Frame):
     def __init__(self):
