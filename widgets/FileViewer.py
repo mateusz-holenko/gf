@@ -10,13 +10,14 @@ class FileLine(urwid.Text):
     def keypress(self, size, key):
         return key
 
-class FileViewer(CustomListBox):
+class FileViewer(urwid.Frame):
     signals = ['quit']
 
     def __init__(self):
         self.body = []
         self.walker = urwid.SimpleFocusListWalker(self.body)
-        super(FileViewer, self).__init__(self.walker)
+        self.content = CustomListBox(self.walker)
+        super(FileViewer, self).__init__(self.content, header=urwid.Divider('-'))
 
     def show_file(self, path, line):
         self.walker.clear()
@@ -26,6 +27,6 @@ class FileViewer(CustomListBox):
             self.walker.append(urwid.AttrMap(FileLine("{0} : {1}".format(str(i), line_content[0:-1])), None, focus_map='reversed'))
             i += 1
 
-        self.set_focus(line - 1)
-        self.set_focus_valign('middle')
+        self.content.set_focus(line - 1)
+        self.content.set_focus_valign('middle')
 

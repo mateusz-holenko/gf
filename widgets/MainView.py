@@ -105,12 +105,12 @@ class MainView(urwid.Frame):
         self.file_viewer = FileViewer()
 
         shortcut_manager.register('q', self.hide_file_view)
-        shortcut_manager.register('j', self.file_viewer.focus_next)
-        shortcut_manager.register('k', self.file_viewer.focus_prev)
+        shortcut_manager.register('j', self.file_viewer.content.focus_next)
+        shortcut_manager.register('k', self.file_viewer.content.focus_prev)
         shortcut_manager.register('J', self.results_list.focus_next)
         shortcut_manager.register('K', self.results_list.focus_prev)
-        shortcut_manager.register(['g', 'g'], self.file_viewer.focus_top)
-        shortcut_manager.register('G', self.file_viewer.focus_bottom)
+        shortcut_manager.register(['g', 'g'], self.file_viewer.content.focus_top)
+        shortcut_manager.register('G', self.file_viewer.content.focus_bottom)
 
         urwid.connect_signal(self.file_viewer, 'quit', self.hide_file_view)
         self.file_viewer.show_file(result.path, result.line_number)
