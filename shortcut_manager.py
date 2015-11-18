@@ -35,6 +35,8 @@ def handle_key(key):
                 actions[t]()
                 controller.main_loop.draw_screen()
             reset()
+        elif not _any_chances():
+            reset()
 
     status_changed_callback()
 
@@ -46,4 +48,17 @@ def reset():
 
 def status_changed_callback():
     pass
+
+def _any_chances():
+    found = False
+    for action in actions:
+        interrupted = False
+        for item in zip(action, tuple(buffer)):
+            if item[0] != item[1]:
+                interrupted = True
+                break
+        if not interrupted:
+            found = True
+            break
+    return found
 
