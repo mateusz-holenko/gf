@@ -82,7 +82,7 @@ class MainView(urwid.Frame):
         shortcut_manager.register('k', self.results_list.focus_prev)
         shortcut_manager.register('e', self.results_list.edit_selected)
         shortcut_manager.register(['f', 'f'], self.results_list.filter_focused_file)
-        shortcut_manager.register(['f', 'd'], self.results_list.filter_focused_file)
+        shortcut_manager.register(['f', 'd'], self.results_list.filter_focused_directory)
         shortcut_manager.register(['f', 'u'], controller.filter_distinct_files)
         shortcut_manager.register(['f', 'e'], self.results_list.filter_by_extension)
         shortcut_manager.register(['f', 'c'], self._custom_filter)
