@@ -23,10 +23,22 @@ class EditBox(urwid.Filler):
             super(EditBox, self).keypress(size, key)
         return None
 
+class StatusWidget(urwid.Columns):
+    def __init__(self):
+        self.right_status = urwid.Text('', align='right')
+        self.left_status = urwid.Text('')
+        super(StatusWidget, self).__init__([self.left_status, self.right_status])
+
+    def set_left_status(self, text):
+        self.left_status.set_text(text)
+
+    def set_right_status(self, text):
+        self.right_status.set_text(text)
+
 class StatusCommandWidget(urwid.Pile):
 
-    def __init__(self, markup):
-        self.status = urwid.Text(markup)
+    def __init__(self):
+        self.status = StatusWidget()
         self.edit_box = EditBox(urwid.Edit())
         self.right_status = urwid.Text('', align='right')
         urwid.connect_signal(self.edit_box, 'entered', self._hide_command)
@@ -53,7 +65,7 @@ class MainView(urwid.Frame):
     def __init__(self):
         self.file_viewer = None
         self.results_list = ResultsViewer(controller.result_walker)
-        self.status_line = StatusCommandWidget('')
+        self.status_line = StatusCommandWidget()
         urwid.connect_signal(self.status_line.edit_box, 'entered', self._focus_list)
         urwid.connect_signal(self.status_line.edit_box, 'canceled', self._focus_list)
         controller.result_walker.set_focus_changed_callback(self._focus_changed)
@@ -132,9 +144,12 @@ class MainView(urwid.Frame):
 
     def _focus_changed(self, position):
         if position == -1 or len(self.results_list.body) == 0:
-            self.status_line.status.set_text("No results found.")
+            self.status_line.status.set_left_status("No results found.")
         else:
-            self.status_line.status.set_text("Position: " + str(position + 1) + " / " + str(len(self.results_list.body)))
+            current_file_path = self.results_list.body[position].original_widget.result.path
+
+            self.status_line.status.set_left_status(current_file_path)
+            self.status_line.status.set_right_status("[" + str(position + 1) + "/" + str(len(self.results_list.body)) + "]")
 
     def _do_filtering(self, text):
         controller.filter(text)
