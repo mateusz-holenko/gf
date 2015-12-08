@@ -3,6 +3,7 @@ import urwid
 import controller
 import subprocess
 import shortcut_manager
+import results_filter
 from widgets.FileViewer import FileViewer
 from widgets.ResultsViewer import ResultsViewer
 
@@ -66,29 +67,51 @@ class MainView(urwid.Frame):
         self.file_viewer = None
         self.results_list = ResultsViewer(controller.result_walker)
         self.status_line = StatusCommandWidget()
+        self.file_viewer = FileViewer()
         urwid.connect_signal(self.status_line.edit_box, 'entered', self._focus_list)
         urwid.connect_signal(self.status_line.edit_box, 'canceled', self._focus_list)
         controller.result_walker.set_focus_changed_callback(self._focus_changed)
+        urwid.connect_signal(self.file_viewer, 'quit', self.hide_file_view)
         urwid.connect_signal(controller.result_walker, 'modified', self._results_modified)
         urwid.connect_signal(self.results_list, 'show', self.show_file_view)
         urwid.connect_signal(self.results_list, 'edit', self.open_editor)
         super(MainView, self).__init__(self.results_list, header=urwid.Text('GF improved 0.1'), footer=self.status_line)
 
-        shortcut_manager.register(['g', 'g'], self.results_list.focus_top)
-        shortcut_manager.register('G', self.results_list.focus_bottom)
-        shortcut_manager.register('t', self.results_list.toggle_focused)
-        shortcut_manager.register('T', self.results_list.toggle_all)
-        shortcut_manager.register('j', self.results_list.focus_next)
-        shortcut_manager.register('k', self.results_list.focus_prev)
-        shortcut_manager.register('e', self.results_list.edit_selected)
-        shortcut_manager.register(['f', 'f'], self.results_list.filter_focused_file)
-        shortcut_manager.register(['f', 'd'], self.results_list.filter_focused_directory)
-        shortcut_manager.register(['f', 'u'], controller.filter_distinct_files)
-        shortcut_manager.register(['f', 'e'], self.results_list.filter_by_extension)
-        shortcut_manager.register(['f', 'c'], self._custom_filter)
-        shortcut_manager.register('x', controller.reset_filter)
-        shortcut_manager.register('enter', self.results_list.show_focused_content)
-        shortcut_manager.register('q', controller.exit)
+        shortcut_manager.register('list', ['g', 'g'], self.results_list.focus_top)
+        shortcut_manager.register('list', 'G', self.results_list.focus_bottom)
+        shortcut_manager.register('list', 't', self.results_list.toggle_focused)
+        shortcut_manager.register('list', 'T', self.results_list.toggle_all)
+        shortcut_manager.register('list', 'j', self.results_list.focus_next)
+        shortcut_manager.register('list', 'k', self.results_list.focus_prev)
+        shortcut_manager.register('list', 'e', self.results_list.edit_selected)
+        shortcut_manager.register('list', ['f', 'f'], self.results_list.filter_focused_file)
+        shortcut_manager.register('list', ['f', 'd'], self.results_list.filter_focused_directory)
+        shortcut_manager.register('list', ['f', 'u'], controller.filter_distinct_files)
+        shortcut_manager.register('list', ['f', 'e'], self.results_list.filter_by_extension)
+        shortcut_manager.register('list', ['f', 'c'], self._custom_filter)
+        shortcut_manager.register('list', 'x', controller.reset_filter)
+        shortcut_manager.register('list', 'enter', self.results_list.show_focused_content)
+        shortcut_manager.register('list', 'q', controller.exit)
+
+        shortcut_manager.register('list', ['s', 'F'], controller.select_by_filename)
+        shortcut_manager.register('list', ['s', 'D'], controller.select_by_directory)
+        shortcut_manager.register('list', ['s', 'E'], controller.select_by_extension)
+
+        shortcut_manager.register('list', ['d', 'F'], controller.delete_by_filename)
+        shortcut_manager.register('list', ['d', 'D'], controller.delete_by_directory)
+        shortcut_manager.register('list', ['d', 'E'], controller.delete_by_extension)
+        shortcut_manager.register('list', ['d', 'P'], controller.delete_by_pattern)
+
+
+        shortcut_manager.register('list', 'u', results_filter.undo)
+
+        shortcut_manager.register('file', 'q', self.hide_file_view)
+        shortcut_manager.register('file', 'j', self.file_viewer.content.focus_next)
+        shortcut_manager.register('file', 'k', self.file_viewer.content.focus_prev)
+        shortcut_manager.register('file', 'J', self.results_list.focus_next)
+        shortcut_manager.register('file', 'K', self.results_list.focus_prev)
+        shortcut_manager.register('file', ['g', 'g'], self.file_viewer.content.focus_top)
+        shortcut_manager.register('file', 'G', self.file_viewer.content.focus_bottom)
 
         shortcut_manager.status_changed_callback = self._shortcut_manager_status_changed
 
@@ -96,37 +119,21 @@ class MainView(urwid.Frame):
         self.status_line.set_right_status(''.join(shortcut_manager.keys))
 
     def open_editor(self):
+        controller.main_loop.stop()
         for result in controller.selected_results:
             subprocess.call(["vim", "+" + str(result.line_number), result.path])
+        controller.main_loop.start()
         controller.deselect_all_results()
-        self._invalidate()
 
     def show_file_view(self, result):
-        self.file_viewer = FileViewer()
-
-        shortcut_manager.register('q', self.hide_file_view)
-        shortcut_manager.register('j', self.file_viewer.content.focus_next)
-        shortcut_manager.register('k', self.file_viewer.content.focus_prev)
-        shortcut_manager.register('J', self.results_list.focus_next)
-        shortcut_manager.register('K', self.results_list.focus_prev)
-        shortcut_manager.register(['g', 'g'], self.file_viewer.content.focus_top)
-        shortcut_manager.register('G', self.file_viewer.content.focus_bottom)
-
-        urwid.connect_signal(self.file_viewer, 'quit', self.hide_file_view)
+        shortcut_manager.push_mode('file')
         self.file_viewer.show_file(result.path, result.line_number)
-
         self.body = urwid.Pile([self.results_list, self.file_viewer])
         self.body.focus_position = 1
 
     def hide_file_view(self):
-        shortcut_manager.register('q', controller.exit)
-        shortcut_manager.register(['g', 'g'], self.results_list.focus_top)
-        shortcut_manager.register('G', self.results_list.focus_bottom)
-        shortcut_manager.register('j', self.results_list.focus_next)
-        shortcut_manager.register('k', self.results_list.focus_prev)
-
+        shortcut_manager.pop_mode()
         self.body = self.results_list
-        self.file_viewer = None
 
     def keypress(self, size, key):
         if key == 'tab' and self.file_viewer:

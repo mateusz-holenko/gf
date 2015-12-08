@@ -4,6 +4,7 @@ import sys
 import re
 import utils
 import urwid
+import results_filter
 import filemanager
 from widgets.MainView import MainView
 from widgets.ListBoxItem import ListBoxItem
@@ -26,6 +27,27 @@ class SearchResult:
 
     def matches(self, pattern):
         return pattern.search(self.path) is not None or pattern.search(self.line_content) is not None
+
+class PassSelectedFile(object):
+    def __init__(self, f):
+        self.f = f
+
+    def __call__(self, file=None):
+        if file is None:
+            file = main_view.results_list.focus.original_widget.result.path
+        self.f(file)
+
+class AskForInput(object):
+    def __init__(self, text):
+        self.text = text
+    def __call__(self, f):
+        def wrapped_f(value=None):
+            if value is None:
+                main_view.focus_position = 'footer'
+                main_view.status_line.ask_and_run(self.text, f)
+            else:
+                f(value)
+        return wrapped_f
 
 def _parse_file(file, pattern):
     results = []
@@ -99,7 +121,7 @@ def filter_distinct_files():
             remove_list.append(item)
 
     for remove_item in remove_list:
-        result_walker.remove(remove_item)
+        results_filtersult_walker.remove(remove_item)
 
 def filter_file(file):
     remove_list = []
@@ -130,6 +152,58 @@ def filter_by_extension(file):
     for remove_item in remove_list:
         result_walker.remove(remove_item)
 
+@AskForInput('Delete by pattern: ')
+def delete_by_pattern(pattern):
+    results_filter.filter(_choose_by_pattern(pattern))
+
+@PassSelectedFile
+def delete_by_extension(file):
+    ext = os.path.splitext(file)[1]
+    results_filter.filter(_choose_by_extension(ext))
+
+@PassSelectedFile
+def delete_by_filename(file):
+    results_filter.filter(_choose_by_filename(file))
+
+@PassSelectedFile
+def delete_by_directory(file):
+    dir = os.path.dirname(file)
+    results_filter.filter(_choose_by_directory(dir))
+
+@PassSelectedFile
+def select_by_extension(file):
+    ext = os.path.splitext(file)[1]
+    for item in _choose_by_extension(ext):
+        select_result(item, True)
+
+@PassSelectedFile
+def select_by_filename(file):
+    for item in _choose_by_filename(file):
+        select_result(item, True)
+
+@PassSelectedFile
+def select_by_directory(file):
+    dir = os.path.dirname(file)
+    for item in _choose_by_directory(dir):
+        select_result(item, True)
+
+def select_by_pattern(pattern):
+    for item in _choose_by_pattern(pattern):
+        select_result(item, True)
+
+def _choose_by_extension(extension):
+    return [i for i in result_walker if os.path.splitext(i.original_widget.result.path)[1] == extension]
+
+def _choose_by_directory(directory):
+    return [i for i in result_walker if os.path.dirname(i.original_widget.result.path) == directory]
+
+def _choose_by_filename(filename):
+    return [i for i in result_walker if i.original_widget.result.path == filename]
+
+def _choose_by_pattern(pattern):
+    compiled_pattern = re.compile(pattern)
+    return [i for i in result_walker if i.original_widget.result.matches(compiled_pattern)]
+
 def reset_filter():
     result_walker.clear()
     dic.clear()
@@ -150,7 +224,6 @@ def toggle_result(result):
 def select_result(result, is_selected):
     global selected_results
 
-    #todo: optimize
     if is_selected:
         if result not in selected_results:
             selected_results.append(result)

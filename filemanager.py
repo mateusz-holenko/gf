@@ -5,8 +5,8 @@ interesting_extensions = []
 ignored_extensions = ['exe', 'dll', 'mdb', 'png', 'so', 'zip', 'gz', 'ttf', 'jpeg', 'jpg', 'pcap', 'o', 'a', 'nupkg', 'pdf' ]
 ignored_directories = ['.git', 'Binaries', 'bin', 'fonts']
 
-# 200 kB
-maximum_file_size = 200 * 1024 * 1024
+# unlimited
+maximum_file_size = 0
 
 def scan(directory):
     global ignored_directories
@@ -32,7 +32,7 @@ def check(path):
     global ignored_extensions
     global maximum_file_size
 
-    if os.stat(path).st_size > maximum_file_size:
+    if maximum_file_size > 0 and os.stat(path).st_size > maximum_file_size:
         return False
     for ignored_extension in ignored_extensions:
         if path.endswith('.' + ignored_extension):

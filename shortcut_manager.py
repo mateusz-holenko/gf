@@ -5,16 +5,25 @@ buffer = []
 actions = {}
 repeat = 0
 keys = []
+modes = []
 
-def register(shortcut, action):
+def push_mode(mode):
+    modes.insert(0, mode)
+
+def pop_mode():
+    del(modes[0])
+
+def register(mode, shortcut, action):
     if type(shortcut) is not list:
         shortcut = [shortcut]
-    actions[tuple(shortcut)] = action
+    if mode not in actions:
+        actions[mode] = {}
+    actions[mode][tuple(shortcut)] = action
 
-def unregister(shortcut):
+def unregister(mode, shortcut):
     if type(shortcut) is not list:
         shortcut = [shortcut]
-    del(actions[tuple(shortcut)])
+    del(actions[mode][tuple(shortcut)])
 
 def handle_key(key):
     global repeat
@@ -30,9 +39,9 @@ def handle_key(key):
     else:
         buffer.append(key)
         t = tuple(buffer)
-        if t in actions:
+        if t in actions[modes[0]]:
             for x in range(0, repeat if repeat != 0 else 1):
-                actions[t]()
+                actions[modes[0]][t]()
                 controller.main_loop.draw_screen()
             reset()
         elif not _any_chances():
@@ -51,7 +60,7 @@ def status_changed_callback():
 
 def _any_chances():
     found = False
-    for action in actions:
+    for action in actions[modes[0]]:
         interrupted = False
         for item in zip(action, tuple(buffer)):
             if item[0] != item[1]:

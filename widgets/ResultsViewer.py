@@ -12,6 +12,9 @@ class ResultsViewer(CustomListBox):
     def filter_focused_file(self):
         controller.filter_file(self.focus.original_widget.result.path)
 
+    def select_focused_file(self):
+        controller.select_by_filename(self.focus.original_widget.result.path)
+
     def filter_focused_directory(self):
         controller.filter_directory(self.focus.original_widget.result.path)
 
