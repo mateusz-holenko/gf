@@ -1,4 +1,5 @@
 #!/usr/bin/python3
+import sys
 import os.path
 import sys
 import re
@@ -15,7 +16,8 @@ main_loop = None
 interesting_files = []
 result_walker = urwid.SimpleFocusListWalker([])
 selected_results = []
-grep_result = []
+grep_results = []
+search_results = []
 dic = {}
 
 class SearchResult:
@@ -71,14 +73,14 @@ def scan(directory):
     interesting_files = filemanager.scan(directory)
 
 def grep(expr):
-    global grep_result
+    global grep_results
 
-    grep_result = []
+    grep_results = []
     pattern = re.compile(expr)
     for file in interesting_files:
         parsed = _parse_file(file, pattern)
         if parsed is not None:
-            grep_result.extend(parsed)
+            grep_results.extend(parsed)
         else:
             print("Skipping file: " + file)
 
@@ -101,74 +103,92 @@ def search(expr, location, direction):
 
     return -1
 
-def filter(expr):
-    pattern = re.compile(expr)
-    remove_list = []
-    for item in result_walker:
-        if not item.original_widget.result.matches(pattern):
-            remove_list.append(item)
+##########
+# SEARCH #
+##########
 
-    for remove_item in remove_list:
-        result_walker.remove(remove_item)
+@AskForInput('/')
+def search_by_pattern_forward(pattern):
+    global search_results
+    search_results = _choose_by_pattern(pattern)
+    select_next_search_result()
 
-def filter_distinct_files():
-    encountered_files = []
-    remove_list = []
-    for item in result_walker:
-        if item.original_widget.result.path not in encountered_files:
-            encountered_files.append(item.original_widget.result.path)
-        else:
-            remove_list.append(item)
+@AskForInput('?')
+def search_by_pattern_backward(pattern):
+    global search_results
+    search_results = _choose_by_pattern(pattern)
+    select_previous_search_result()
 
-    for remove_item in remove_list:
-        results_filtersult_walker.remove(remove_item)
+def select_next_search_result():
+    if len(search_results) == 0:
+        return
+    current_selection = main_view.results_list.focus
+    try:
+        index = search_results.index(current_selection)
+        focus_on = search_results[(index + 1) % len(search_results)]
+        main_view.results_list.focus_position = result_walker.index(focus_on)
+    except ValueError:
+        main_view.results_list.focus_position = result_walker.index(search_results[0])
+    main_view.results_list._invalidate()
 
-def filter_file(file):
-    remove_list = []
-    for item in result_walker:
-        if item.original_widget.result.path != file:
-            remove_list.append(item)
+def select_previous_search_result():
+    if len(search_results) == 0:
+        return
+    current_selection = main_view.results_list.focus
+    try:
+        index = search_results.index(current_selection)
+        main_view.results_list.focus_position = result_walker.index(search_results[index - 1])
+    except ValueError:
+        main_view.results_list.focus_position = result_walker.index(search_results[-1])
+    main_view.results_list._invalidate()
 
-    for remove_item in remove_list:
-        result_walker.remove(remove_item)
+##########
+# FILTER #
+##########
 
-def filter_directory(file):
-    dir = os.path.dirname(file)
-    remove_list = []
-    for item in result_walker:
-        if os.path.dirname(item.original_widget.result.path) != dir:
-            remove_list.append(item)
-
-    for remove_item in remove_list:
-        result_walker.remove(remove_item)
-
-def filter_by_extension(file):
-    ext = os.path.splitext(file)[1]
-    remove_list = []
-    for item in result_walker:
-        if os.path.splitext(item.original_widget.result.path)[1] != ext:
-            remove_list.append(item)
-
-    for remove_item in remove_list:
-        result_walker.remove(remove_item)
-
-@AskForInput('Delete by pattern: ')
-def delete_by_pattern(pattern):
+@AskForInput('Filter by pattern: ')
+def filter_by_pattern(pattern):
     results_filter.filter(_choose_by_pattern(pattern))
 
 @PassSelectedFile
-def delete_by_extension(file):
+def filter_by_extension(file):
     ext = os.path.splitext(file)[1]
     results_filter.filter(_choose_by_extension(ext))
 
 @PassSelectedFile
-def delete_by_filename(file):
+def filter_by_filename(file):
     results_filter.filter(_choose_by_filename(file))
+
+@PassSelectedFile
+def filter_by_directory(file):
+    dir = os.path.dirname(file)
+    results_filter.filter(_choose_by_directory(dir))
+
+##########
+# DELETE #
+##########
+
+@AskForInput('Delete by pattern: ')
+def delete_by_pattern(pattern):
+    results_filter.delete(_choose_by_pattern(pattern))
+
+@PassSelectedFile
+def delete_by_extension(file):
+    ext = os.path.splitext(file)[1]
+    results_filter.delete(_choose_by_extension(ext))
+
+@PassSelectedFile
+def delete_by_filename(file):
+    results_filter.delete(_choose_by_filename(file))
 
 @PassSelectedFile
 def delete_by_directory(file):
     dir = os.path.dirname(file)
-    results_filter.filter(_choose_by_directory(dir))
+    results_filter.delete(_choose_by_directory(dir))
+
+##########
+# SELECT #
+##########
 
 @PassSelectedFile
 def select_by_extension(file):
@@ -187,9 +207,14 @@ def select_by_directory(file):
     for item in _choose_by_directory(dir):
         select_result(item, True)
 
+@AskForInput('Select by pattern: ')
 def select_by_pattern(pattern):
     for item in _choose_by_pattern(pattern):
         select_result(item, True)
+
+####################
+# HELPER FUNCTIONS #
+####################
 
 def _choose_by_extension(extension):
     return [i for i in result_walker if os.path.splitext(i.original_widget.result.path)[1] == extension]
@@ -209,7 +234,7 @@ def reset_filter():
     dic.clear()
 
     counter = 1
-    for result in grep_result:
+    for result in grep_results:
         item = ListBoxItem(counter, result)
         dic[result] = item
         result_walker.append(urwid.AttrMap(item, None, focus_map='reversed'))

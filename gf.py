@@ -8,13 +8,8 @@ from widgets.MainView import MainView
 
 import concurrent.futures
 
-# logging.basicConfig(filename='log.log', level=logging.DEBUG)
-# logger = logging.getLogger(__name__)
-
 directory = '.'
 expr = sys.argv[1]
-
-#processing_pool = concurrent.futures.ThreadPoolExecutor(max_workers=10)
 
 shortcut_manager.push_mode('list')
 controller.main_view = MainView()

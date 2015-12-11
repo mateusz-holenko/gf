@@ -84,24 +84,35 @@ class MainView(urwid.Frame):
         shortcut_manager.register('list', 'j', self.results_list.focus_next)
         shortcut_manager.register('list', 'k', self.results_list.focus_prev)
         shortcut_manager.register('list', 'e', self.results_list.edit_selected)
-        shortcut_manager.register('list', ['f', 'f'], self.results_list.filter_focused_file)
-        shortcut_manager.register('list', ['f', 'd'], self.results_list.filter_focused_directory)
-        shortcut_manager.register('list', ['f', 'u'], controller.filter_distinct_files)
-        shortcut_manager.register('list', ['f', 'e'], self.results_list.filter_by_extension)
-        shortcut_manager.register('list', ['f', 'c'], self._custom_filter)
+#        shortcut_manager.register('list', ['f', 'f'], self.results_list.filter_focused_file)
+#        shortcut_manager.register('list', ['f', 'd'], self.results_list.filter_focused_directory)
+#        shortcut_manager.register('list', ['f', 'u'], controller.filter_distinct_files)
+#        shortcut_manager.register('list', ['f', 'e'], self.results_list.filter_by_extension)
+#        shortcut_manager.register('list', ['f', 'c'], self._custom_filter)
         shortcut_manager.register('list', 'x', controller.reset_filter)
         shortcut_manager.register('list', 'enter', self.results_list.show_focused_content)
         shortcut_manager.register('list', 'q', controller.exit)
 
+        shortcut_manager.register('list', ['f', 'F'], controller.filter_by_filename)
+        shortcut_manager.register('list', ['f', 'D'], controller.filter_by_directory)
+        shortcut_manager.register('list', ['f', 'E'], controller.filter_by_extension)
+        shortcut_manager.register('list', ['f', 'P'], controller.filter_by_pattern)
+
         shortcut_manager.register('list', ['s', 'F'], controller.select_by_filename)
         shortcut_manager.register('list', ['s', 'D'], controller.select_by_directory)
         shortcut_manager.register('list', ['s', 'E'], controller.select_by_extension)
+        shortcut_manager.register('list', ['s', 'P'], controller.select_by_pattern)
 
         shortcut_manager.register('list', ['d', 'F'], controller.delete_by_filename)
         shortcut_manager.register('list', ['d', 'D'], controller.delete_by_directory)
         shortcut_manager.register('list', ['d', 'E'], controller.delete_by_extension)
         shortcut_manager.register('list', ['d', 'P'], controller.delete_by_pattern)
 
+        shortcut_manager.register('list', '/', controller.search_by_pattern_forward)
+        shortcut_manager.register('list', '?', controller.search_by_pattern_backward)
+
+        shortcut_manager.register('list', 'n', controller.select_next_search_result)
+        shortcut_manager.register('list', 'p', controller.select_previous_search_result)
 
         shortcut_manager.register('list', 'u', results_filter.undo)
 

@@ -17,6 +17,15 @@ def undo():
 def filter(items):
     removed = []
     for index, value in enumerate(controller.result_walker):
+        if value not in items:
+            removed.append((index, value))
+    for index, to_remove in enumerate(removed):
+        del controller.result_walker[to_remove[0] - index]
+    history.append(removed)
+
+def delete(items):
+    removed = []
+    for index, value in enumerate(controller.result_walker):
         for item in items:
             if value == item:
                 removed.append((index, value))
