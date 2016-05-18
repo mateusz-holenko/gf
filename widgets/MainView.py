@@ -103,7 +103,6 @@ class MainView(urwid.Frame):
         shortcut_manager.register('list', ['d', 'E'], controller.delete_by_extension)
         shortcut_manager.register('list', ['d', 'P'], controller.delete_by_pattern)
 
-
         shortcut_manager.register('list', 'u', results_filter.undo)
 
         shortcut_manager.register('file', 'q', self.hide_file_view)
