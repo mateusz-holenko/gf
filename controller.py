@@ -6,6 +6,7 @@ import utils
 import urwid
 import results_filter
 import filemanager
+import subprocess
 from widgets.MainView import MainView
 from widgets.ListBoxItem import ListBoxItem
 
@@ -190,6 +191,14 @@ def select_by_directory(file):
 def select_by_pattern(pattern):
     for item in _choose_by_pattern(pattern):
         select_result(item, True)
+
+@AskForInput('Vim command: ')
+def call_editor(cmd):
+    main_loop.stop()
+    for result in selected_results:
+        subprocess.call(["vim", "+" + str(result.line_number), "+" + cmd, "+wq", result.path])
+    main_loop.start()
+    deselect_all_results()
 
 def _choose_by_extension(extension):
     return [i for i in result_walker if os.path.splitext(i.original_widget.result.path)[1] == extension]

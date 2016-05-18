@@ -92,6 +92,7 @@ class MainView(urwid.Frame):
         shortcut_manager.register('list', 'x', controller.reset_filter)
         shortcut_manager.register('list', 'enter', self.results_list.show_focused_content)
         shortcut_manager.register('list', 'q', controller.exit)
+        shortcut_manager.register('list', ['@', 'v'], controller.call_editor)
 
         shortcut_manager.register('list', ['s', 'F'], controller.select_by_filename)
         shortcut_manager.register('list', ['s', 'D'], controller.select_by_directory)
