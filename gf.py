@@ -11,15 +11,15 @@ import concurrent.futures
 # logging.basicConfig(filename='log.log', level=logging.DEBUG)
 # logger = logging.getLogger(__name__)
 
-directory = '.'
-expr = sys.argv[1]
+controller.directory = '.'
+controller.expr = sys.argv[1]
 
 #processing_pool = concurrent.futures.ThreadPoolExecutor(max_workers=10)
 
 shortcut_manager.push_mode('list')
 controller.main_view = MainView()
-controller.scan(directory)
-controller.grep(expr)
+controller.scan(controller.directory)
+controller.grep(controller.expr)
 controller.main_loop = urwid.MainLoop(controller.main_view, palette=[('reversed', 'standout', ''), ('matched', 'dark red', '')])
 
 controller.main_loop.run()

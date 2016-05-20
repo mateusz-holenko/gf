@@ -67,6 +67,13 @@ def _parse_file(file, pattern):
 def exit():
     raise urwid.ExitMainLoop()
 
+@AskForInput('Pattern: ')
+def refresh(pattern):
+    main_loop.stop()
+    scan(directory)
+    grep(pattern)
+    main_loop.start()
+
 def scan(directory):
     global interesting_files
     interesting_files = filemanager.scan(directory)
