@@ -107,6 +107,7 @@ class MainView(urwid.Frame):
         shortcut_manager.register('list', 'R', self.refresh)
         shortcut_manager.register('list', '#', controller.refresh)
 
+        shortcut_manager.register('file', 'e', self.results_list.edit_selected)
         shortcut_manager.register('file', 'q', self.hide_file_view)
         shortcut_manager.register('file', 'j', self.file_viewer.content.focus_next)
         shortcut_manager.register('file', 'k', self.file_viewer.content.focus_prev)
