@@ -104,6 +104,7 @@ class MainView(urwid.Frame):
         shortcut_manager.register('list', ['d', 'P'], controller.delete_by_pattern)
 
         shortcut_manager.register('list', 'u', results_filter.undo)
+        shortcut_manager.register('list', 'R', self.refresh)
         shortcut_manager.register('list', '#', controller.refresh)
 
         shortcut_manager.register('file', 'q', self.hide_file_view)
@@ -115,6 +116,12 @@ class MainView(urwid.Frame):
         shortcut_manager.register('file', 'G', self.file_viewer.content.focus_bottom)
 
         shortcut_manager.status_changed_callback = self._shortcut_manager_status_changed
+
+    def refresh(self):
+        controller.main_loop.stop()
+        controller.scan(controller.directory)
+        controller.grep(controller.expr)
+        controller.main_loop.start()
 
     def _shortcut_manager_status_changed(self):
         self.status_line.set_right_status(''.join(shortcut_manager.keys))
