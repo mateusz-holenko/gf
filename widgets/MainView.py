@@ -111,12 +111,22 @@ class MainView(urwid.Frame):
         shortcut_manager.register('file', 'q', self.hide_file_view)
         shortcut_manager.register('file', 'j', self.file_viewer.content.focus_next)
         shortcut_manager.register('file', 'k', self.file_viewer.content.focus_prev)
-        shortcut_manager.register('file', 'J', self.results_list.focus_next)
-        shortcut_manager.register('file', 'K', self.results_list.focus_prev)
+        shortcut_manager.register('file', 'J', self.show_next)
+        shortcut_manager.register('file', 'K', self.show_prev)
         shortcut_manager.register('file', ['g', 'g'], self.file_viewer.content.focus_top)
         shortcut_manager.register('file', 'G', self.file_viewer.content.focus_bottom)
 
         shortcut_manager.status_changed_callback = self._shortcut_manager_status_changed
+
+    def show_next(self):
+        self.hide_file_view()
+        self.results_list.focus_next()
+        self.results_list.show_focused_content()
+
+    def show_prev(self):
+        self.hide_file_view()
+        self.results_list.focus_prev()
+        self.results_list.show_focused_content()
 
     def refresh(self):
         controller.main_loop.stop()
