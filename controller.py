@@ -69,6 +69,9 @@ def exit():
 
 @AskForInput('Pattern: ')
 def refresh(pattern):
+    global expr
+
+    expr = pattern
     main_loop.stop()
     scan(directory)
     grep(pattern)
